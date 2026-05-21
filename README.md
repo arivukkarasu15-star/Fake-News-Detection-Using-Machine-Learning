@@ -1,3 +1,13 @@
+---
+title: Fake News Detection Using Machine Learning
+emoji: 📰
+colorFrom: red
+colorTo: blue
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # Fake News Detection using Machine Learning and NLP
 
 ## Final Year Project - Implementation Guide
