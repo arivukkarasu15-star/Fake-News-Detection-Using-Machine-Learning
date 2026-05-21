@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fake News Detection System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* Explicit compatibility fix for background-clip */
+        .highlight {
+            background-clip: text;
+            -webkit-background-clip: text;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="top-menu-container">
+            <button id="themeToggle" class="menu-btn" onclick="toggleTheme()" aria-label="Toggle Theme"
+                title="Toggle Dark/Light Mode">
+                <span id="themeIcon">🌙</span>
+            </button>
+        </div>
+
+        <header>
+            <h1>📰 Fake News <span class="highlight">Detector</span></h1>
+        </header>
+
+        <main>
+            <div class="tabs">
+                <button class="tab-btn active" onclick="openTab(event, 'manual')">✍️ Manual Check</button>
+                <button class="tab-btn" onclick="openTab(event, 'live')">🌍 Live News</button>
+                <button class="tab-btn" onclick="openTab(event, 'image')">📰 News Image Check</button>
+            </div>
+
+            <!-- Manual Check Section -->
+            <div id="manual" class="tab-content active">
+                <!-- API Key Warning -->
+                <div id="apiErrorAlert" class="hidden"
+                    style="background: rgba(245, 158, 11, 0.1); border: 1px solid #f59e0b; color: #d97706; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; display: flex; align-items: flex-start; gap: 10px; max-width: 750px; margin-left: auto; margin-right: auto;">
+                    <span style="font-size: 1.2rem;">⚠️</span>
+                    <div style="text-align: left;">
+                        <strong>Real-time Verification Offline:</strong> The backend API keys (NewsAPI/SerpAPI) appear
+                        to be invalid or expired. Results are currently based only on stylistic AI analysis.
+                    </div>
+                </div>
+
+                <div class="card" style="max-width: 750px; margin: 0 auto; text-align: center;">
+                    <p class="small-text" style="margin-bottom: 1.5rem; opacity: 0.9;">
+                        Paste news text to analyze linguistic style and cross-verify with real-time reports.
+                    </p>
+                    <div class="input-focus-group">
+                        <textarea id="newsInput" placeholder="Enter news text here..."></textarea>
+                        <button id="analyzeBtn" class="primary-btn" onclick="analyzeText()"
+                            style="width: 100%; margin-top: 1rem;">Run Analysis</button>
+                    </div>
+
+                    <div id="result" class="result-box hidden">
+                        <div id="predictionIcon"></div>
+                        <h2 id="predictionText"
+                            style="font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.25rem;"></h2>
+                        <p id="confidenceText"
+                            style="font-weight: 600; font-size: 1rem; margin-bottom: 1.5rem; opacity: 0.8;"></p>
+
+                        <div id="verificationContainer"
+                            style="display: none; background: var(--badge-bg, rgba(0,0,0,0.03)); padding: 1.25rem; border-radius: 16px; text-align: left; border: 1px solid var(--badge-border, rgba(0,0,0,0.05));">
+                            <p id="verificationText"
+                                style="font-weight: 700; font-size: 1.15rem; margin-bottom: 0.6rem; color: var(--primary);">
+                            </p>
+                            <div id="matchEvidence" style="margin-bottom: 0.8rem; display: none;">
+                                <div style="font-size: 0.85rem; font-weight: 600; opacity: 0.8; margin-bottom: 6px;">🎯
+                                    Verified Keywords:</div>
+                                <div id="keywordTags" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+                            </div>
+                            <p class="small-text" id="messageText" style="line-height: 1.4;"></p>
+                        </div>
+
+                        <div id="liveUrlContainer" style="margin-top: 1.25rem;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live News Section -->
+            <div id="live" class="tab-content">
+                <div class="card">
+                    <h2>Fetch Live News</h2>
+                    <div style="display: flex; flex-direction: column; gap: 1.25rem; margin-top: 1.5rem;">
+                        <select id="language"
+                            style="width: 100%; padding: 1rem; border-radius: 12px; border: 1px solid var(--border); font-family: inherit; font-size: 1rem; cursor: pointer;">
+                            <option value="en">English</option>
+                            <option value="tamil">Tamil</option>
+                        </select>
+                        <button class="primary-btn" onclick="fetchNews()" style="width: 100%;">Fetch News</button>
+                    </div>
+                </div>
+
+                <div id="news-feed" class="news-grid">
+                    <!-- News items will appear here -->
+                </div>
+            </div>
+
+            <!-- News Image Check Section -->
+            <div id="image" class="tab-content">
+                <div class="card">
+                    <h2>📰 News Image Check</h2>
+                    <p class="small-text">Upload a screenshot of a news article or headline. Text will be extracted and
+                        analyzed for authenticity.</p>
+
+                    <div class="upload-container">
+                        <div class="upload-zone" id="dropZone" onclick="document.getElementById('imageInput').click()">
+                            <div class="upload-icon">📁</div>
+                            <p class="upload-text">Drag & Drop news screenshot or click to browse</p>
+                            <p class="small-text" style="margin-top: 5px;">Supports: JPG, PNG, WEBP</p>
+                            <input type="file" id="imageInput" accept="image/*">
+                            <div id="fileInfo" class="file-info"></div>
+                        </div>
+                        <button id="imageBtn" class="primary-btn" onclick="analyzeImage()"
+                            style="width: 100%; margin-top: 1.5rem;">Analyze News Image</button>
+                    </div>
+                </div>
+
+                <div id="image-result" class="hidden">
+                    <div class="card" style="margin-top:1rem;">
+                        <h3>Uploaded Image</h3>
+                        <img id="origImg" src="" style="max-width:100%;border-radius:8px;margin-bottom:0.5rem;">
+                    </div>
+                    <div id="ela-message" class="result-box" style="margin-top:1rem;"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Theme Toggle Logic
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+                const themeIcon = document.getElementById('themeIcon');
+                if (themeIcon) themeIcon.innerText = '☀️';
+            }
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            body.classList.toggle('dark-theme');
+            const isDark = body.classList.contains('dark-theme');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            document.getElementById('themeIcon').innerText = isDark ? '☀️' : '🌙';
+        }
+
+        // Initialize theme on load
+        initTheme();
+
+        function openTab(event, tabName) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+
+            document.getElementById(tabName).classList.add('active');
+
+            // Highlight the button that was clicked
+            if (event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            }
+        }
+
+        function updateButton(btnId, text, progress = null) {
+            const btn = document.getElementById(btnId);
+            if (progress !== null) {
+                const p = Math.min(Math.round(progress), 100);
+                btn.innerHTML = `<span class="progress-text">${text} (${p}%)</span>`;
+                btn.style.background = `linear-gradient(90deg, #6366f1 ${p}%, #4f46e5 ${p}%)`;
+            } else {
+                btn.innerHTML = text;
+                btn.style.background = '';
+            }
+        }
+
+        // --- Smart Progress Animation Logic ---
+        let globalProgressInterval = null;
+        let currentProgress = 0;
+
+        function startProgress(btnId, text) {
+            currentProgress = 0;
+            if (globalProgressInterval) clearInterval(globalProgressInterval);
+
+            globalProgressInterval = setInterval(() => {
+                // Asymptotic progress: the closer to 100, the slower it moves
+                let increment = (100 - currentProgress) * 0.05;
+                // Add some natural variation
+                increment *= (Math.random() * 0.5 + 0.75);
+                currentProgress += Math.max(0.1, increment);
+
+                // Slow down significantly after 90
+                if (currentProgress > 98) currentProgress = 98.5;
+
+                updateButton(btnId, text, currentProgress);
+            }, 100);
+            return globalProgressInterval;
+        }
+
+        async function finishProgress(btnId, text) {
+            if (globalProgressInterval) clearInterval(globalProgressInterval);
+
+            // Fast glide to 100
+            while (currentProgress < 100) {
+                currentProgress += 5;
+                updateButton(btnId, text, Math.min(currentProgress, 100));
+                await new Promise(r => setTimeout(r, 20));
+            }
+
+            await new Promise(r => setTimeout(r, 200)); // Brief pause for satisfaction
+            updateButton(btnId, text);
+        }
+
+        async function analyzeImage() {
+            const btnId = 'imageBtn';
+            const input = document.getElementById('imageInput');
+            const file = input.files[0];
+            const newsApiKey = '';
+            const serpApiKey = '';
+            const geminiApiKey = '';
+
+
+            if (!file) {
+                alert("Please select a news image!");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+            if (newsApiKey) formData.append('newsapi_key', newsApiKey);
+            if (serpApiKey) formData.append('serpapi_key', serpApiKey);
+            if (geminiApiKey) formData.append('gemini_api_key', geminiApiKey);
+
+            const resultContainer = document.getElementById('image-result');
+            if (!resultContainer.classList.contains('hidden')) {
+                resultContainer.classList.add('analyzing-state');
+            }
+            startProgress(btnId, 'Analyzing Image...');
+
+            try {
+                const response = await fetch('/predict_image', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                resultContainer.classList.remove('analyzing-state');
+
+                if (data.error) throw new Error(data.error);
+
+                const isReal = data.prediction === 'REAL';
+                const messageBox = document.getElementById('ela-message');
+                document.getElementById('origImg').src = data.original;
+
+                let translationHtml = '';
+                if (data.translated_text) {
+                    translationHtml = `
+                    <div class="translation-block">
+                        <div class="translation-label">🌐 AI Translation to English</div>
+                        <p style="font-style: italic; opacity: 0.9;">"${data.translated_text}"</p>
+                    </div>`;
+                }
+
+                messageBox.innerHTML = `
+                    <h3>${isReal ? '✅' : '🚨'} ${isReal ? 'REAL NEWS' : 'FAKE NEWS'}</h3>
+                    <p>Confidence: <strong>${data.confidence.toFixed(1)}%</strong></p>
+                    <div style="background: var(--badge-bg, rgba(0,0,0,0.03)); padding: 1rem; border-radius: 8px; text-align: left; border: 1px solid var(--badge-border, rgba(0,0,0,0.05)); margin-top: 10px; margin-bottom: 10px;">
+                        <p style="font-size: 0.95rem; font-weight: 600; color: var(--primary); margin-bottom: 5px;">🔍 ${data.verification || 'Unverified'}</p>
+                        <p style="font-size: 0.9rem; line-height: 1.4;">${data.message || 'Analysis based on linguistic style patterns.'}</p>
+                    </div>
+                    ${data.live_url ? `<p class="small-text" style="color: var(--primary); font-weight: 500; margin-top: 10px;"><a href="${data.live_url}" target="_blank" style="text-decoration: underline; color: inherit;">🔗 View Source: ${data.source_name || 'Verified Website'}</a></p>` : `<p class="small-text" style="color: var(--danger); font-weight: 600; margin-top: 10px;">❌ There is no source of the news.</p>`}
+                `;
+
+                messageBox.className = 'result-box';
+                messageBox.classList.add(isReal ? 'real' : 'fake');
+
+                document.getElementById('image-result').classList.remove('hidden');
+
+            } catch (error) {
+                alert("Error: " + error.message);
+            } finally {
+                await finishProgress(btnId, 'Analyze News Image');
+            }
+        }
+
+
+        async function analyzeText() {
+            const btnId = 'analyzeBtn';
+            const text = document.getElementById('newsInput').value;
+            const resultBox = document.getElementById('result');
+
+            if (!text) {
+                alert("Please enter some text!");
+                return;
+            }
+
+            if (!resultBox.classList.contains('hidden')) {
+                resultBox.classList.add('analyzing-state');
+            }
+            startProgress(btnId, 'Analyzing News...');
+
+            const newsApiKey = '';
+            const serpApiKey = '';
+            const geminiApiKey = '';
+
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: text, newsapi_key: newsApiKey, serpapi_key: serpApiKey, gemini_api_key: geminiApiKey })
+                });
+
+                const data = await response.json();
+                resultBox.classList.remove('analyzing-state');
+
+                // --- API Error Logic ---
+                const apiAlert = document.getElementById('apiErrorAlert');
+                if (data.api_error) {
+                    apiAlert.classList.remove('hidden');
+                } else {
+                    apiAlert.classList.add('hidden');
+                }
+
+                resultBox.classList.remove('hidden', 'real', 'fake');
+                const isReal = data.prediction === 'real';
+
+                resultBox.classList.add(isReal ? 'real' : 'fake');
+                document.getElementById('predictionIcon').innerText = isReal ? '✅' : '🚨';
+                document.getElementById('predictionText').innerText = isReal ? "REAL NEWS" : "FAKE NEWS";
+                document.getElementById('confidenceText').innerText = `Confidence: ${data.confidence.toFixed(1)}%`;
+
+                // Tiered Verification UI Logic
+                const vText = document.getElementById('verificationText');
+                const vStatus = data.verification || "Unverified";
+
+                let vIcon = '🔍';
+                let vColor = 'var(--primary)';
+
+                if (vStatus.includes("Debunked")) {
+                    vIcon = '🚨';
+                    vColor = 'var(--danger)';
+                } else if (vStatus.includes("Verified by Fact Checkers")) {
+                    vIcon = '✅';
+                    vColor = 'var(--success)';
+                } else if (vStatus.includes("Corroborated")) {
+                    vIcon = '📰';
+                    vColor = '#4f46e5'; // Trusted News Indigo
+                } else if (vStatus.includes("Related Reports")) {
+                    vIcon = '📄';
+                    vColor = 'var(--text-secondary)';
+                }
+
+                vText.innerHTML = `${vIcon} ${vStatus}`;
+                vText.style.color = vColor;
+                document.getElementById('verificationContainer').style.display = 'block';
+
+                // Match Evidence UI
+                const evidenceBox = document.getElementById('matchEvidence');
+                const tagContainer = document.getElementById('keywordTags');
+
+                if (data.matched_words && data.matched_words.length > 0) {
+                    evidenceBox.style.display = 'block';
+                    tagContainer.innerHTML = data.matched_words.map(word =>
+                        `<span style="background: ${isReal ? 'var(--success-bg)' : 'var(--danger-bg)'}; 
+                                     color: ${isReal ? 'var(--success)' : 'var(--danger)'}; 
+                                     padding: 2px 10px; border-radius: 99px; font-size: 0.8rem; font-weight: 700; border: 1px solid currentColor;">
+                            ${word}
+                        </span>`
+                    ).join('');
+                } else {
+                    evidenceBox.style.display = 'none';
+                }
+
+                document.getElementById('messageText').innerText = data.message || "Analysis based on linguistic style patterns.";
+
+                const urlContainer = document.getElementById('liveUrlContainer');
+                if (data.live_url) {
+                    urlContainer.innerHTML = `<p class="small-text"><a href="${data.live_url}" target="_blank" style="color: var(--primary); text-decoration: underline; font-weight: 500;">🔗 View Source: ${data.source_name || 'Verified Website'}</a></p>`;
+                } else {
+                    urlContainer.innerHTML = `<p class="small-text" style="color: var(--danger); font-weight: 600;">❌ There is no source of the news.</p>`;
+                }
+
+            } catch (error) {
+                alert("Error analyzing text: " + error);
+            } finally {
+                await finishProgress(btnId, 'Run Analysis');
+            }
+        }
+
+        async function fetchNews() {
+            const newsApiKey = '';
+            const category = 'general';
+            const langVal = document.getElementById('language').value;
+            const feed = document.getElementById('news-feed');
+
+            if (langVal === 'en') {
+                language = 'en';
+                source = 'english-top';
+            } else if (langVal === 'tamil') {
+                language = 'ta';
+                source = 'tamil-combined';
+            }
+
+            feed.innerHTML = '<div class="loader">Loading news...</div>';
+
+            try {
+                const response = await fetch(`/fetch_news?api_key=${newsApiKey}&category=${category}&language=${language}&source=${source}`);
+                const data = await response.json();
+
+                if (data.error) throw new Error(data.error);
+
+                feed.innerHTML = '';
+
+                data.articles.forEach(article => {
+                    const isReal = article.prediction === 'real';
+                    const card = document.createElement('div');
+                    card.className = `news-item ${isReal ? 'border-real' : 'border-fake'}`;
+
+                    card.innerHTML = `
+                    <div class="badge ${isReal ? 'badge-real' : 'badge-fake'}">
+                        ${isReal ? '✅ Real' : '🚨 Fake'} (${article.confidence.toFixed(0)}%)
+                    </div>
+                    <h3><a href="${article.url}" target="_blank">${article.title}</a></h3>
+                    <p class="source">${article.source}</p>
+                    <hr style="border: 0; border-top: 1px solid rgba(0,0,0,0.05); margin-top: 15px;">
+                        `;
+                    feed.appendChild(card);
+                });
+
+                if (data.articles.length === 0) {
+                    feed.innerHTML = '<p>No articles found.</p>';
+                }
+
+            } catch (error) {
+                feed.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            }
+        }
+
+        // Image Upload UI Logic
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('imageInput');
+        const fileInfo = document.getElementById('fileInfo');
+
+        if (fileInput) {
+            fileInput.addEventListener('change', function (e) {
+                if (this.files && this.files[0]) {
+                    const fileName = this.files[0].name;
+                    fileInfo.innerText = `📄 selected: ${fileName}`;
+                    fileInfo.style.display = 'block';
+                }
+            });
+        }
+
+        // Drag and drop events
+        if (dropZone) {
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                if (fileInput) {
+                    fileInput.files = files;
+                    const event = new Event('change');
+                    fileInput.dispatchEvent(event);
+                }
+            }, false);
+        }
+    </script>
+</body>
+
+</html>

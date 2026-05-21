@@ -1,0 +1,15 @@
+pandas
+numpy
+scikit-learn
+matplotlib
+seaborn
+nltk
+requests
+flask
+Pillow
+pytesseract
+opencv-python-headless
+python-dotenv
+deep-translator
+joblib
+google-genai
