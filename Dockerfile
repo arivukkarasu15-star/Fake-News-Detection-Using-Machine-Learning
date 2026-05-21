@@ -7,6 +7,7 @@ ENV PATH="/home/user/.local/bin:$PATH"
 WORKDIR /app
 COPY --chown=user ./requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir gunicorn
 
 COPY --chown=user . /app
 
