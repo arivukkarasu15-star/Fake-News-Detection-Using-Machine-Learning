@@ -22,11 +22,12 @@
 
 <body>
     <div class="container">
-        <div class="top-menu-container">
+        <div class="top-menu-container" style="display:flex;align-items:center;gap:8px;">
             <button id="themeToggle" class="menu-btn" onclick="toggleTheme()" aria-label="Toggle Theme"
                 title="Toggle Dark/Light Mode">
                 <span id="themeIcon">🌙</span>
             </button>
+            <button id="teamBtn" onclick="document.getElementById('teamModal').style.display='flex'" style="background:none;border:1px solid rgba(128,128,128,0.4);color:inherit;padding:6px 16px;border-radius:20px;cursor:pointer;font-size:0.85rem;margin-left:8px;font-family:inherit;">👥 Team</button>
         </div>
 
         <header>
@@ -491,6 +492,65 @@
             }, false);
         }
     </script>
+
+<!-- Team Modal -->
+<div id="teamModal" onclick="if(event.target===this)this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(8px);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:linear-gradient(145deg,#1a1a2e 0%,#16213e 60%,#0f3460 100%);border:1px solid rgba(255,255,255,0.12);border-radius:24px;padding:40px 36px;max-width:400px;width:90%;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.05);position:relative;animation:modalIn 0.3s ease;">
+    <style>
+      @keyframes modalIn {
+        from { opacity:0; transform:scale(0.9) translateY(20px); }
+        to   { opacity:1; transform:scale(1) translateY(0); }
+      }
+    </style>
+    <button onclick="document.getElementById('teamModal').style.display='none'" style="position:absolute;top:16px;right:20px;background:rgba(255,255,255,0.08);border:none;color:rgba(255,255,255,0.6);font-size:1.1rem;cursor:pointer;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;line-height:1;">×</button>
+
+    <div style="font-size:3rem;margin-bottom:10px;">🎓</div>
+    <h2 style="color:#fff;font-size:1.4rem;margin:0 0 4px;font-weight:700;letter-spacing:-0.02em;">Our Team</h2>
+    <p style="color:rgba(255,255,255,0.35);font-size:0.78rem;margin:0 0 28px;letter-spacing:0.05em;text-transform:uppercase;">B.E. Computer Science · 2026</p>
+
+    <div style="display:flex;flex-direction:column;gap:10px;">
+
+      <!-- Team Leader -->
+      <div style="background:linear-gradient(135deg,rgba(108,99,255,0.2),rgba(168,85,247,0.15));border:1px solid rgba(168,85,247,0.3);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:14px;">
+        <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#6c63ff,#a855f7);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:0.85rem;flex-shrink:0;box-shadow:0 4px 12px rgba(108,99,255,0.4);">AK</div>
+        <div style="text-align:left;">
+          <div style="color:#fff;font-weight:700;font-size:0.95rem;">Arivukkarasu K</div>
+          <div style="color:#a78bfa;font-size:0.72rem;font-weight:600;letter-spacing:0.04em;">⭐ TEAM LEADER</div>
+        </div>
+      </div>
+
+      <!-- Veeramani -->
+      <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:14px;">
+        <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#06b6d4,#3b82f6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:0.85rem;flex-shrink:0;box-shadow:0 4px 12px rgba(6,182,212,0.3);">VA</div>
+        <div style="text-align:left;">
+          <div style="color:#fff;font-weight:600;font-size:0.95rem;">Veeramani A</div>
+          <div style="color:rgba(255,255,255,0.35);font-size:0.72rem;letter-spacing:0.04em;">TEAM MEMBER</div>
+        </div>
+      </div>
+
+      <!-- Abishek -->
+      <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:14px;">
+        <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#10b981,#06b6d4);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:0.85rem;flex-shrink:0;box-shadow:0 4px 12px rgba(16,185,129,0.3);">AS</div>
+        <div style="text-align:left;">
+          <div style="color:#fff;font-weight:600;font-size:0.95rem;">Abishek S Y</div>
+          <div style="color:rgba(255,255,255,0.35);font-size:0.72rem;letter-spacing:0.04em;">TEAM MEMBER</div>
+        </div>
+      </div>
+
+      <!-- Sakthivel -->
+      <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:14px;">
+        <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#f59e0b,#ef4444);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:0.85rem;flex-shrink:0;box-shadow:0 4px 12px rgba(245,158,11,0.3);">SB</div>
+        <div style="text-align:left;">
+          <div style="color:#fff;font-weight:600;font-size:0.95rem;">Sakthivel B</div>
+          <div style="color:rgba(255,255,255,0.35);font-size:0.72rem;letter-spacing:0.04em;">TEAM MEMBER</div>
+        </div>
+      </div>
+
+    </div>
+    <p style="color:rgba(255,255,255,0.2);font-size:0.7rem;margin-top:24px;letter-spacing:0.03em;">Made with ❤️ · Fake News Detection Project</p>
+  </div>
+</div>
+
 </body>
 
 </html>
