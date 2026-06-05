@@ -6,4 +6,4 @@ __pycache__/
 *.log
 *.pkl
 run_app.bat
-static/uploads/
+static/uploads/train.csv 
