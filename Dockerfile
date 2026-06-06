@@ -1,5 +1,12 @@
 FROM python:3.9
 
+# Install Tesseract OCR with Tamil language support
+RUN apt-get update && apt-get install -y \
+    tesseract-ocr \
+    tesseract-ocr-tam \
+    libtesseract-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN useradd -m -u 1000 user
 USER user
 ENV PATH="/home/user/.local/bin:$PATH"

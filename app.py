@@ -921,8 +921,11 @@ def check_with_groq(query, api_key, live_context=""):
                 num in expl_before_not for num in claim_nums if len(num) >= 2
             )
             if expl_confirms or nums_confirmed:
-                print(f"DEBUG: Groq self-contradiction — explanation confirms claim. Skipping FAKE verdict.")
-                return None  # Pass to next verifier (Gemini/OpenRouter)
+                  print(f"DEBUG: Groq self-contradiction — but keeping FAKE for historical fact errors.")
+                  # Only skip if it's NOT a historical date/fact error
+                  historical_error_phrases = ['correct year', 'correct date', 'independence', 'actually', 'wrong year']
+                  if not any(p in explanation.lower() for p in historical_error_phrases):
+                      return None
 
         # Only override if Groq is fairly confident
         if data.get('confidence', 0) >= 70 and status in ['REAL', 'FAKE', 'TRUE']:
@@ -950,7 +953,7 @@ def check_with_openrouter(query, api_key, live_context=""):
     try:
         # Using a reliable and fast model through OpenRouter
         # You can change this to "anthropic/claude-3-haiku" or "google/gemini-2.0-flash-001" etc.
-        model_name = "google/gemini-2.0-flash-001" 
+        model_name = "meta-llama/llama-3.3-70b-instruct"
         
         TODAY_DATE = datetime.now().strftime("%B %d, %Y")
         live_info = f"LIVE WEB CONTEXT (use this to inform your verdict):\n{live_context}" if live_context else ""
